@@ -96,7 +96,7 @@ class LCReranker(BaseReranker[LCConfig]):
                 )
             )
 
-        raw_results.sort(key=lambda r: r.score, reverse=True)
+        raw_results.sort(key=lambda r: r.score)
         ranked: list[RerankOutput] = [
             r.model_copy(update={"rank": i}) for i, r in enumerate(raw_results, start=1)
         ]

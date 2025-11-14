@@ -34,7 +34,7 @@ uv sync
 from models.embedding_models import LCEmbedding, LCConfig
 
 # llama.cpp 서버 사용
-embedding = LCEmbedding(LCConfig(base_url="http://localhost:8080"))
+embedding = LCEmbedding(config=LCConfig())
 ```
 
 ### 2. 리랭킹 모델 (Reranking Models)
@@ -47,10 +47,11 @@ embedding = LCEmbedding(LCConfig(base_url="http://localhost:8080"))
 | `HFReranker` | HuggingFace | Qwen3 Reranker 모델 지원 (0.6B/4B/8B) |
 
 ```python
-from models.reranking_models import HFReranker, HFConfig, Model
+from models.reranking_models import HFReranker, HFConfig, HFModel
 
 # HuggingFace Reranker 사용
-reranker = HFReranker(HFConfig(model=Model.QWEN3_0_6B))
+config = HFConfig(model=HFModel.QWEN3_RERANKER_0_6B)
+reranker = HFReranker(config=config)
 ```
 
 ### 3. 챗 모델 (Chat Models)
@@ -64,10 +65,10 @@ reranker = HFReranker(HFConfig(model=Model.QWEN3_0_6B))
 | `ChatOpenRouter` | OpenRouter | 클라우드 API 사용 |
 
 ```python
-from models.chat_models import ChatOllama
+from models.chat_models.ollama_chat import ChatOllama
 
 # Ollama 모델 사용
-chat = ChatOllama(model="llama3")
+chat = ChatOllama(model="qwen3:30b")
 response = chat.invoke("안녕하세요!")
 ```
 

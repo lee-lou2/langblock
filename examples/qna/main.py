@@ -86,7 +86,7 @@ def main():
             # 검색 방식 선택(vector, fts, hybrid 선택 가능)
             query_type=LanceDB.QueryType.HYBRID,
             # # 1차 리랭커 설정(RRF: 기본, LinearCombination, CrossEncoder 선택 가능)
-            # reranker_type=LanceDB.RerankType.CrossEncoder,
+            reranker_type=LanceDB.RerankType.CrossEncoder,
         )
 
         print_results("검색 결과", results, max_display=5)

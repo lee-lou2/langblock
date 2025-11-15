@@ -201,15 +201,12 @@ class LanceDB(
         scored = self._reranker.rerank(query=query, docs=docs)
 
         # 리랭커 결과(id -> score) 매핑
-        score_map: Dict[str, float] = {s.id: float(s.score) for s in scored}
+        score_by_id: Dict[str, float] = {s.id: float(s.score) for s in scored}
 
         # SearchResult rerank_score 주입
         for r in results:
-            r.rerank_score = score_map.get(r.record.id)
+            r.rerank_score = score_by_id.get(r.record.id)
 
         # rerank_score 기준 정렬
-        results.sort(
-            key=lambda r: (r.rerank_score is not None, r.rerank_score or 0.0),
-            reverse=True,
-        )
-        return results[:top_k]
+        results.sort(key=lambda r: r.rerank_score, reverse=True)
+        return results

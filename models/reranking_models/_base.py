@@ -24,19 +24,11 @@ class Document(BaseModel):
 class RerankOutput(BaseModel):
     """리랭킹 출력"""
 
-    model_config = ConfigDict(frozen=False, strict=True)
+    model_config = ConfigDict(frozen=True, strict=True)
 
     id: str | None
     text: str
     score: float
-    rank: int = 0
-
-    @field_validator("rank")
-    @classmethod
-    def validate_rank(cls, v: int) -> int:
-        if v < 0:
-            raise ValueError("rank must be non-negative")
-        return v
 
 
 @dataclass(frozen=True)
@@ -77,15 +69,13 @@ class BaseReranker(Generic[ConfigT], abc.ABC):
         self,
         query: str,
         docs: Sequence[Document],
-        top_k: int | None,
-    ) -> tuple[str, Sequence[Document], int | None]:
-        return query, docs, top_k
+    ) -> tuple[str, Sequence[Document]]:
+        return query, docs
 
     def _post_rerank(
         self,
         query: str,
         docs: Sequence[Document],
-        top_k: int | None,
         results: list[RerankOutput],
     ) -> list[RerankOutput]:
         return results
@@ -95,7 +85,6 @@ class BaseReranker(Generic[ConfigT], abc.ABC):
         self,
         query: str,
         docs: Sequence[Document],
-        top_k: int | None,
     ) -> list[RerankOutput]:
         """실제 리랭킹 구현
 
@@ -108,20 +97,18 @@ class BaseReranker(Generic[ConfigT], abc.ABC):
         self,
         query: str,
         docs: Sequence[Document],
-        top_k: int | None = None,
     ) -> list[RerankOutput]:
         start = perf_counter()
         self.logger.debug(
-            "Start rerank: query=%r, top_k=%r, num_docs=%d",
+            "Start rerank: query=%r, num_docs=%d",
             query,
-            top_k,
             len(docs),
         )
 
         try:
-            q, ds, tk = self._pre_rerank(query, docs, top_k)
-            results = self._rerank_impl(q, ds, tk)
-            final_results = self._post_rerank(q, ds, tk, results)
+            q, ds = self._pre_rerank(query, docs)
+            results = self._rerank_impl(q, ds)
+            final_results = self._post_rerank(q, ds, results)
 
             duration_ms = (perf_counter() - start) * 1000
             self.logger.info(

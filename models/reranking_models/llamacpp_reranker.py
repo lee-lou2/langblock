@@ -22,6 +22,10 @@ class LCConfig(Config):
     api_key: str | None = None
     timeout: float = 30.0
 
+    instruct: str = (
+        "Given a web search query, retrieve relevant passages that answer the query"
+    )
+
 
 class LCReranker(BaseReranker[LCConfig]):
     """llama.cpp 기반 리랭킹 모델"""
@@ -40,16 +44,14 @@ class LCReranker(BaseReranker[LCConfig]):
         self,
         query: str,
         docs: Sequence[Document],
-        top_k: int | None,
     ) -> list[RerankOutput]:
         if not docs:
             return []
 
         url = self.config.base_url.rstrip("/") + "/v1/rerank"
         payload: dict[str, Any] = {
-            "query": query,
+            "query": f"<Instruct>{self.config.instruct}</Instruct>\n<Query>{query}</Query>",
             "documents": [d.text for d in docs],
-            "top_n": top_k,
         }
 
         headers = {"Content-Type": "application/json"}
@@ -92,14 +94,6 @@ class LCReranker(BaseReranker[LCConfig]):
                     id=doc.id,
                     text=doc.text,
                     score=float(score),
-                    rank=0,
                 )
             )
-
-        raw_results.sort(key=lambda r: r.score)
-        ranked: list[RerankOutput] = [
-            r.model_copy(update={"rank": i}) for i, r in enumerate(raw_results, start=1)
-        ]
-        if top_k is not None:
-            ranked = ranked[:top_k]
-        return ranked
+        return raw_results

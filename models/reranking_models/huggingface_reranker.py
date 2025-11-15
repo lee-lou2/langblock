@@ -105,7 +105,6 @@ class HFReranker(BaseReranker[HFConfig]):
         self,
         query: str,
         docs: Sequence[Document],
-        top_k: int | None,
     ) -> list[RerankOutput]:
         self._setup()
 
@@ -163,17 +162,6 @@ class HFReranker(BaseReranker[HFConfig]):
                         id=doc.id,
                         text=doc.text,
                         score=float(score),
-                        rank=0,
                     )
                 )
-
-        raw_results.sort(key=lambda x: x.score, reverse=True)
-        ranked: list[RerankOutput] = [
-            r.model_copy(update={"rank": idx})
-            for idx, r in enumerate(raw_results, start=1)
-        ]
-
-        if top_k is not None:
-            ranked = ranked[:top_k]
-
-        return ranked
+        return raw_results

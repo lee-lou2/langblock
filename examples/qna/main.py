@@ -15,6 +15,9 @@ from models.embedding_models import LCConfig, LCEmbedding
 from models.reranking_models import (
     LCReranker,
     LCConfig as LCRerankerConfig,
+    HFReranker,
+    HFModel,
+    HFConfig
 )
 
 
@@ -39,7 +42,7 @@ def print_results(title: str, results, max_display: int = 3):
         if r.distance is not None:
             score_parts.append(f"거리: {r.distance:.4f}")
         if r.rerank_score is not None:
-            score_parts.append(f"재랭킹: {r.rerank_score:.4f}")
+            score_parts.append(f"리랭킹 스코어: {float(r.rerank_score)}")
 
         if score_parts:
             print(f"   {' | '.join(score_parts)}")
@@ -54,6 +57,8 @@ def main():
     embedding = LCEmbedding(embedding_config)
     reranker_config = LCRerankerConfig(base_url="http://127.0.0.1:8081")
     reranker = LCReranker(reranker_config)
+    # reranker_config = HFConfig(model=HFModel.QWEN3_RERANKER_8B)
+    # reranker = HFReranker(reranker_config)
 
     # LanceDB 연결
     db = LanceDB(

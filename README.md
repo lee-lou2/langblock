@@ -30,11 +30,25 @@ uv sync
 | `LCEmbedding` | llama.cpp | 로컬 서버에서 임베딩 생성 |
 | `OLMEmbedding` | Ollama | Ollama를 통한 임베딩 생성 |
 
+
 ```python
+# 올라마 모델 서빙 예시
+# $ ollama run qwen3-embedding:8b
+from models.embedding_models import LCEmbedding, LCConfig
+
+# 올라마 모델 사용
+embedding = LCEmbedding(config=LCConfig())
+vector = embedding.embed("올라마 예시 쿼리")
+```
+
+```python
+# llama.cpp 모델 서빙 예시
+# $ llama-cpp-python -m llama-server -hf Qwen/Qwen3-Embedding-8B-GGUF:F16 --embedding --pooling last -ub 8192 --verbose-prompt
 from models.embedding_models import LCEmbedding, LCConfig
 
 # llama.cpp 서버 사용
 embedding = LCEmbedding(config=LCConfig())
+vector = embedding.embed("llama.cpp 예시 쿼리")
 ```
 
 ### 2. 리랭킹 모델 (Reranking Models)
@@ -52,6 +66,18 @@ from models.reranking_models import HFReranker, HFConfig, HFModel
 # HuggingFace Reranker 사용
 config = HFConfig(model=HFModel.QWEN3_RERANKER_0_6B)
 reranker = HFReranker(config=config)
+results = reranker.rerank(query="허깅페이스 예시 쿼리", docs=docs)
+```
+
+```python
+# llama.cpp 모델 서빙 예시
+# $ llama-server -hf Mungert/Qwen3-Reranker-8B-GGUF:BF16 --reranking --port 8081
+from models.reranking_models import LCReranker, LCConfig
+
+# llama.cpp Reranker 사용
+config = LCConfig(base_url="http://127.0.0.1:8081")
+reranker = LCReranker(config=config)
+results = reranker.rerank(query="llama.cpp 예시 쿼리", docs=docs)
 ```
 
 ### 3. 챗 모델 (Chat Models)
